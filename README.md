@@ -8,6 +8,9 @@ is visualized with/without gradient.
 ## 02. MNIST:
 Using LeNet and MLP to classify the MNIST data.
 
+## 03. Iris dataset:
+Converting the feature and label of iris dataset to  
+
 ## Reference:
 [1] https://caffe2.ai/docs/tutorials
 
