@@ -3,24 +3,13 @@ from matplotlib import pyplot as plt
 import numpy as np
 import os
 import lmdb
-import shutil
 from imageio import imread
-import caffe2.python.predictor.predictor_exporter as pe
 from caffe2.proto import caffe2_pb2
-from caffe2.python.predictor import mobile_exporter
-from caffe2.python import (
-    brew,
-    core,
-    model_helper,
-    net_drawer,
-    optimizer,
-    visualize,
-    workspace,
-)
-import requests
-import tarfile
+from caffe2.python import core
 import glob
 from random import shuffle
+import requests
+import tarfile
 
 core.GlobalInit(["caffe2", "--caffe2_log_level=0"])
 print("Necessities imported!")
@@ -56,10 +45,10 @@ else:
 #
 # Plot images
 #
-sample_imgs = glob.glob(os.path.join(data_folder, "cifar", "train") + '/*.png')[:10]
+sample_imgs = glob.glob(os.path.join(data_folder, "cifar", "train") + '/*.png')[:20]
 plt.subplots(4, 5, figsize=(10, 10))
 plt.tight_layout()
-for i in range(10):
+for i in range(20):
     ax = plt.subplot(4, 5, i+1)
     ax.set_title(sample_imgs[i].split("_")[-1].split(".")[0])
     ax.imshow(imread(sample_imgs[i]).astype(np.uint8))
@@ -86,15 +75,14 @@ testing_lmdb_path = os.path.join("tutorial_data", "cifar10", "testing_lmdb")
 # Path to labels.txt
 labels_path = os.path.join("tutorial_data", "cifar10", "cifar", "labels.txt")
 
-labels_handler = open(labels_path, "r")
-classes = {}
-i = 0
-lines = labels_handler.readlines()
-for line in sorted(lines):
-    line = line.rstrip()
-    classes[line] = i
-    i += 1
-labels_handler.close()
+with open(labels_path, "r") as labels_handler:
+    classes = {}
+    i = 0
+    lines = labels_handler.readlines()
+    for line in sorted(lines):
+        line = line.rstrip()
+        classes[line] = i
+        i += 1
 print("classes:", classes)
 
 #
@@ -124,6 +112,7 @@ with open(testing_labels_path, "w") as testing_labels_handler:
         testing_labels_handler.write(img + ' ' + str(classes[img.split('_')[-1].split('.')[0]]) + '\n')
     print("Finished writing testing label files")
 
+
 #
 # Write to db
 #
@@ -147,30 +136,35 @@ def write_lmdb(labels_file_path, lmdb_path):
 
                 # convert to BGR
                 img_data = img_data[:, :, (2, 1, 0)]
+                img_data = img_data / 256.0
 
                 # HWC -> CHW (N gets added in AddInput function)
                 img_data = np.transpose(img_data, (2, 0, 1))
 
                 # Create TensorProtos
                 tensor_protos = caffe2_pb2.TensorProtos()
+
                 img_tensor = tensor_protos.protos.add()
                 img_tensor.dims.extend(img_data.shape)
                 img_tensor.data_type = 1
                 flatten_img = img_data.reshape(np.prod(img_data.shape))
                 img_tensor.float_data.extend(flatten_img)
+
                 label_tensor = tensor_protos.protos.add()
                 label_tensor.data_type = 2
                 label_tensor.int32_data.append(im_label)
+
+                # write to db
                 txn.put(
-                    '{}'.format(count).encode('ascii'),
-                    tensor_protos.SerializeToString()
+                    "{}".format(count).encode("ascii"),  # key
+                    tensor_protos.SerializeToString()    # value
                 )
-                if ((count % 1000 == 0)):
+                if count % 1000 == 0:
                     print("Inserted {} rows".format(count))
                 count = count + 1
-
         print("Inserted {} rows".format(count))
         print("\nLMDB saved at " + lmdb_path)
+
 
 #
 # Call function to write our LMDBs
@@ -180,11 +174,13 @@ if not os.path.exists(training_lmdb_path):
     write_lmdb(training_labels_path, training_lmdb_path)
 else:
     print(training_lmdb_path, "already exists!")
+
 if not os.path.exists(validation_lmdb_path):
     print("Writing validation LMDB")
     write_lmdb(validation_labels_path, validation_lmdb_path)
 else:
     print(validation_lmdb_path, "already exists!")
+
 if not os.path.exists(testing_lmdb_path):
     print("Writing testing LMDB")
     write_lmdb(testing_labels_path, testing_lmdb_path)

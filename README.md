@@ -11,6 +11,9 @@ Using LeNet and MLP to classify the MNIST data.
 ## 03. Iris dataset:
 Converting the feature and label of iris dataset to  
 
+## 04. CIFAR:
+Downloading and training CIFAR dataset. 
+
 ## Reference:
 [1] https://caffe2.ai/docs/tutorials
 
