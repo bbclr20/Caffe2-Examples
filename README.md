@@ -9,10 +9,13 @@ is visualized with/without gradient.
 Using LeNet and MLP to classify the MNIST data.
 
 ## 03. Iris dataset:
-Converting the feature and label of iris dataset to  
+Converting the feature and label of iris dataset to floats and write to minidb.
 
 ## 04. CIFAR:
-Downloading and training CIFAR dataset. 
+Downloading and training CIFAR dataset.
+
+## 05. Image pre-processing:
+Pre-processing image with skimage and numpy.
 
 ## Reference:
 [1] https://caffe2.ai/docs/tutorials
