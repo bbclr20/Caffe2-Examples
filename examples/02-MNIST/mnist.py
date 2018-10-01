@@ -8,7 +8,9 @@ from caffe2.python import (
     visualize,
     workspace,
 )
-import caffe2.python.predictor.predictor_exporter as pe
+from caffe2.python.predictor import predictor_exporter as pe
+from caffe2.python.predictor import mobile_exporter as me
+
 from matplotlib import pyplot as plt
 import numpy as np
 import operator
@@ -110,7 +112,7 @@ def AddInput(model, batch_size, db, db_type):
 def AddMLPModel(model, data, save_png=True):
     """Multi-layer Perceptron model"""
     size = 28 * 28 * 1
-    sizes = [size, size * 2, size * 2, 10]
+    sizes = [size, size * 4, size * 2, 10]
     layer = data
     for i in range(len(sizes) - 1):
         layer = brew.fc(model, layer, 'dense_{}'.format(i), dim_in=sizes[i], dim_out=sizes[i + 1])
@@ -256,7 +258,7 @@ if __name__ == "__main__":
     #
     deploy_model = model_helper.ModelHelper(
         name="mnist_deploy", arg_scope=arg_scope, init_params=False)
-    AddModel(deploy_model, "data")
+    AddModel(deploy_model, "data", USE_LENET_MODEL)
 
     #
     # Training
@@ -343,6 +345,21 @@ if __name__ == "__main__":
 
     pe.save_to_db("minidb", os.path.join(root_folder, "mnist_model.minidb"), pe_meta)
     print("Deploy model saved to: " + root_folder + "/mnist_model.minidb")
+# [start-20181001-ben-add] #
+    # Save and compare the model with diffrent format
+    # Use mobile_exporter's Export function to acquire init_net and predict_net
+    init_net, predict_net = me.Export(workspace, deploy_model.net, deploy_model.params)
+
+    full_init_net_out = os.path.join(root_folder, "init_net_out.pb")
+    full_predict_net_out = os.path.join(root_folder, "predict_net_out.pb")
+
+    # Simply write the two nets to file
+    with open(full_init_net_out, 'wb') as f:
+        f.write(init_net.SerializeToString())
+    with open(full_predict_net_out, 'wb') as f:
+        f.write(predict_net.SerializeToString())
+    print("Model saved as " + full_init_net_out + " and " + full_predict_net_out)
+# [end-20181001-ben-add] #
 
     #
     # load model
