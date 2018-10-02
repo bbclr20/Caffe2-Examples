@@ -2,8 +2,10 @@ import skimage.io as io
 import skimage.transform
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 
-IMAGE_LOCATION = 'images/cat.jpg'
+root_dir = "../../images"
+IMAGE_LOCATION = os.path.join(root_dir, "cat.jpg")
 img = skimage.img_as_float(skimage.io.imread(IMAGE_LOCATION))
 img = img.astype(np.float32)
 
@@ -26,7 +28,7 @@ plt.show()
 #
 # Rotated image
 #
-ROTATED_IMAGE = "images/cell-tower.jpg"
+ROTATED_IMAGE = os.path.join(root_dir, "cell-tower.jpg")
 imgRotated = skimage.img_as_float(skimage.io.imread(ROTATED_IMAGE))
 imgRotated = imgRotated.astype(np.float32)
 plt.figure("Rotated images")
@@ -45,7 +47,7 @@ plt.show()
 #
 # Mirror image
 #
-MIRROR_IMAGE = "images/mirror-image.jpg"
+MIRROR_IMAGE = os.path.join(root_dir, "mirror-image.jpg")
 imgMirror = skimage.img_as_float(skimage.io.imread(MIRROR_IMAGE))
 imgMirror = imgMirror.astype(np.float32)
 plt.figure("Mirror images")
@@ -84,7 +86,7 @@ plt.show()
 #
 # Cropping image
 #
-IMAGE_LOCATION = 'images/cat.jpg'
+IMAGE_LOCATION = os.path.join(root_dir, "cat.jpg")
 img = skimage.img_as_float(skimage.io.imread(IMAGE_LOCATION))
 img = img.astype(np.float32)
 img256 = skimage.transform.resize(img, (256, 256))
