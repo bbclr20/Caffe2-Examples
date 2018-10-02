@@ -1,11 +1,7 @@
-import skimage
 import skimage.io as io
 import skimage.transform
-import sys
 import numpy as np
-import math
 import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
 
 IMAGE_LOCATION = 'images/cat.jpg'
 img = skimage.img_as_float(skimage.io.imread(IMAGE_LOCATION))
